@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = "Admin Home";
+}
+
+<div class="container mt-5">
+    <h1 class="display-4 text-center mb-5" style="text-shadow: 4px 4px 8px #CC9E09;">ADMIN DASHBOARD</h1>
+    
+    <div class="row g-4">
+ <!-- Sittings Management -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100 border-primary">
+         <div class="card-body text-center">
+        <i class="bi bi-clock" style="font-size: 3rem; color: #4AA1B5;"></i>
+    <h5 class="card-title mt-3">Sittings</h5>
+           <p class="card-text">Manage restaurant sittings and time slots</p>
+         <a asp-area="Admin" asp-controller="Sittings" asp-action="Index" class="btn btn-primary">View Sittings</a>
+      <a asp-area="Admin" asp-controller="Sittings" asp-action="Create" class="btn btn-success mt-2">Create Sitting</a>
+                </div>
+            </div>
+        </div>
+
+     <!-- User Management -->
+  <div class="col-md-6 col-lg-4">
+<div class="card shadow-sm h-100 border-success">
+           <div class="card-body text-center">
+      <i class="bi bi-people" style="font-size: 3rem; color: #4AA1B5;"></i>
+             <h5 class="card-title mt-3">User Management</h5>
+     <p class="card-text">Manage staff, members, and user roles</p>
+   <a asp-area="Admin" asp-controller="User" asp-action="Staff" class="btn btn-primary">Staff Users</a>
+  <a asp-area="Admin" asp-controller="User" asp-action="Members" class="btn btn-info mt-2">Members</a>
+                </div>
+       </div>
+</div>
+
+        <!-- Manager Functions (Manager Only) -->
+      @if (User.IsInRole("Manager"))
+        {
+      <div class="col-md-6 col-lg-4">
+       <div class="card shadow-sm h-100 border-warning">
+            <div class="card-body text-center">
+         <i class="bi bi-shield-lock" style="font-size: 3rem; color: #CC9E09;"></i>
+           <h5 class="card-title mt-3">Admin Management</h5>
+         <p class="card-text">Manage administrator accounts</p>
+    <a asp-area="Admin" asp-controller="User" asp-action="Admins" class="btn btn-warning">Admin Users</a>
+     </div>
+</div>
+            </div>
+        }
+
+<!-- Back to Home -->
+ <div class="col-md-6 col-lg-4">
+    <div class="card shadow-sm h-100 border-secondary">
+    <div class="card-body text-center">
+      <i class="bi bi-house" style="font-size: 3rem; color: #666;"></i>
+   <h5 class="card-title mt-3">Main Site</h5>
+       <p class="card-text">Return to main website</p>
+      <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-secondary">Home Page</a>
+    </div>
+            </div>
+        </div>
+    </div>
+</div>

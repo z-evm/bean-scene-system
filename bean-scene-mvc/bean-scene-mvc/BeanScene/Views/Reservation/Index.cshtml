@@ -1,0 +1,178 @@
+﻿@model BeanScene.Models.Reservation
+@{
+    ViewData["Title"] = "Make Reservation";
+}
+
+<h1 class="text-center mb-4" style="text-shadow: 4px 4px 8px #CC9E09";>MAKE RESERVATION</h1>
+
+<div id="reservation-view" class="rounded-lg mb-5">
+    <!-- Background Image -->
+    <img src="~/images/cafe-chairs-outdoors.jpg" class="img-fluid" alt="Cafe Chairs Outside">
+
+    <!-- Overlay -->
+    <div id="reservation-overlay">
+        @if (ViewBag.TimeSlots == null && Model == null)
+        {
+            <div class="search-form">
+                <form asp-action="Search" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <!-- Date Selection -->
+                    <div class="form-group mb-4">
+                        <label for="Date" class="form-label">Date</label>
+                        <input type="date" id="Date" name="date" class="form-control form-control-lg" required />
+                    </div>
+
+                    <!-- Time Selection -->
+                    <div class="form-group mb-4">
+                        <label for="timePicker" class="form-label">Time</label>
+                        <select id="timePicker" name="time" class="form-select form-select-lg" required>
+                            @for (int hour = 7; hour < 22; hour++)
+                            {
+                                <option value="@hour:00">@hour.ToString("D2"):00</option>
+                                <option value="@hour:15">@hour.ToString("D2"):15</option>
+                                <option value="@hour:30">@hour.ToString("D2"):30</option>
+                                <option value="@hour:45">@hour.ToString("D2"):45</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Number of Guests -->
+                    <div class="form-group mb-4">
+                        <label for="Guests" class="form-label">Number of Guests</label>
+                        <input type="number" id="Guests" name="guests" class="form-control form-control-lg" required min="1" placeholder="Enter number of guests" />
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-lg">Search</button>
+                    </div>
+                </form>
+
+                <!-- Error Message -->
+                @if (!string.IsNullOrEmpty(ViewData["ErrorMessage"] as string))
+                {
+                    <div class="alert alert-danger mt-3">
+                        @ViewData["ErrorMessage"]
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+
+<!-- Time Slot Section -->
+@if (ViewBag.TimeSlots != null && Model == null)
+{
+    <div id="time-slot-section"
+         class="position-absolute top-50 start-50 translate-middle text-center w-75">
+
+        @{
+            var timeSlots = ViewBag.TimeSlots as List<(DateTime SlotStart, bool IsAvailable)>;
+            int sittingId = ViewBag.SittingId ?? 0;
+            int guests = ViewBag.Guests ?? 0;
+        }
+
+        @if (timeSlots != null && timeSlots.Any())
+        {
+            <form method="get" action="@Url.Action("Book", "Reservation")" class="time-slot-form p-4">
+                @Html.AntiForgeryToken()
+                <h2 class="text-black mb-4">Available Time Slots</h2>
+
+                <!-- Include SittingId and Guests as hidden fields -->
+                <input type="hidden" name="sittingId" value="@sittingId" />
+                <input type="hidden" name="guests" value="@guests" />
+
+                <!-- Time Slots Grid -->
+                <div id="time-slot-grid" class="time-slot-grid mb-3">
+                    @foreach (var slot in timeSlots)
+                    {
+                        <button type="submit"
+                                name="selectedTimeSlot"
+                                value="@slot.SlotStart.ToString("yyyy-MM-ddTHH:mm:ss")"
+                                class="time-slot-box @(slot.IsAvailable ? "available" : "unavailable")"
+                        @(slot.IsAvailable ? "" : "disabled")>
+                            @slot.SlotStart.ToString("HH:mm")
+                        </button>
+                    }
+                </div>
+            </form>
+        }
+        else
+        {
+            <p class="text-danger">No time slots available for the specified range.</p>
+        }
+    </div>
+}
+
+<!-- Booking Section -->
+@if (Model != null)
+{
+    <div class="image-container">
+        <div id="booking-section" class="position-absolute top-50 start-50 translate-middle d-flex justify-content-center align-items-center" style="width: 1200px;">
+            <div class="col-md-8 col-lg-6">
+                <form asp-action="Book" method="post" class="p-4 shadow rounded" style="background-color: var(--bean-mid-blue);">
+                    @Html.AntiForgeryToken()
+                    <!-- Hidden Fields -->
+                    <input type="hidden" asp-for="SittingId" value="@ViewBag?.SittingId" />
+                    <input type="hidden" asp-for="Pax" value="@ViewBag?.Guests" />
+                    <input type="hidden" asp-for="Start" value="@ViewBag?.SelectedTimeSlot?.ToString("yyyy-MM-ddTHH:mm:ss")" />
+
+                    <!-- User Information -->
+                    <div class="form-group mb-3">
+                        <label asp-for="Person.Name" class="form-label fw-bold" style="color: var(--bean-gold);">Name</label>
+                        <input asp-for="Person.Name" class="form-control form-control-lg" placeholder="Enter your full name" required aria-required="true" style="border-color: var(--bean-gold);" />
+                        <span asp-validation-for="Person.Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Person.Email" class="form-label fw-bold" style="color: var(--bean-gold);">Email</label>
+                        <input asp-for="Person.Email" type="email" class="form-control form-control-lg" placeholder="Enter your email" required aria-required="true" style="border-color: var(--bean-gold);" />
+                        <span asp-validation-for="Person.Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Person.Phone" class="form-label fw-bold" style="color: var(--bean-gold);">Phone Number</label>
+                        <input asp-for="Person.Phone" type="tel" class="form-control form-control-lg" placeholder="Enter your phone number" required aria-required="true" style="border-color: var(--bean-gold);" />
+                        <span asp-validation-for="Person.Phone" class="text-danger"></span>
+                    </div>
+
+                    <!-- Additional Notes -->
+                    <div class="form-group mb-4">
+                        <label asp-for="Notes" class="form-label fw-bold" style="color: var(--bean-gold);">Additional Notes</label>
+                        <textarea asp-for="Notes" class="form-control form-control-lg" rows="3" placeholder="Any additional requests or information" style="border-color: var(--bean-gold);"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+
+                    <!-- Confirmation Section -->
+                    <div class="form-group mb-4 p-3 border rounded shadow-sm" style="background-color: var(--white);">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="cancellationPolicy" required aria-required="true">
+                            <label class="form-check-label" for="cancellationPolicy" style="color: var(--bean-dark-blue);">
+                                I agree to the Cancellation Policy.*
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="marketing" name="marketingOptIn">
+                            <label class="form-check-label" for="marketing" style="color: var(--bean-dark-blue);">
+                                I'd like to hear about news and events from the venue.
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="smsOptIn" name="smsOptIn">
+                            <label class="form-check-label" for="smsOptIn" style="color: var(--bean-dark-blue);">
+                                I agree to receive automated text messages for reminders.
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Button -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-lg" style="background-color: var(--bean-gold); color: var(--bean-dark-blue); border: none;">Confirm Booking</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
